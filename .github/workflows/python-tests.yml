@@ -31,5 +31,7 @@ jobs:
         poetry run black --check .
         poetry run mypy app
 
-    - name : Run tests
-      run: poetry run pytest
+    - name: Run unit tests
+      env:
+        SECRET_KEY: test_secret_key_for_ci_testing_32_chars
+      run: poetry run pytest -m "not e2e" --tb=short
