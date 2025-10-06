@@ -107,20 +107,21 @@ class TestSecureCookie:
             cookie_value = self.secure_cookie.get_cookie(request)
             return {"cookie_value": cookie_value}
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            # Set cookie
-            response = await client.get("/set-cookie")
-            assert response.status_code == 200
-            assert "test_cookie" in response.cookies
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-            # Get cookie
-            cookies = {"test_cookie": response.cookies["test_cookie"]}
-            response = await client.get("/get-cookie", cookies=cookies)
-            assert response.status_code == 200
-            data = response.json()
-            assert data["cookie_value"] == "test_session_value"
+        # Set cookie
+        response = await client.get("/set-cookie")
+        assert response.status_code == 200
+        assert "test_cookie" in response.cookies
+
+        # Get cookie
+        cookies = {"test_cookie": response.cookies["test_cookie"]}
+        response = await client.get("/get-cookie", cookies=cookies)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["cookie_value"] == "test_session_value"
+
+        await client.aclose()
 
     @pytest.mark.asyncio
     async def test_signed_cookie_tamper_protection(self):
@@ -132,16 +133,17 @@ class TestSecureCookie:
             cookie_value = self.secure_cookie.get_cookie(request)
             return {"cookie_value": cookie_value}
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            # Try with tampered cookie
-            tampered_cookie = "tampered_value.invalid_signature"
-            cookies = {"test_cookie": tampered_cookie}
-            response = await client.get("/get-cookie", cookies=cookies)
-            assert response.status_code == 200
-            data = response.json()
-            assert data["cookie_value"] is None
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+        # Try with tampered cookie
+        tampered_cookie = "tampered_value.invalid_signature"
+        cookies = {"test_cookie": tampered_cookie}
+        response = await client.get("/get-cookie", cookies=cookies)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["cookie_value"] is None
+
+        await client.aclose()
 
     @pytest.mark.asyncio
     async def test_dictionary_cookie_storage(self):
@@ -163,20 +165,21 @@ class TestSecureCookie:
             cookie_data = self.secure_cookie.get_cookie_data(request)
             return {"cookie_data": cookie_data}
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            # Set dictionary cookie
-            response = await client.get("/set-dict-cookie")
-            assert response.status_code == 200
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-            # Get dictionary cookie
-            cookies = {"test_cookie": response.cookies["test_cookie"]}
-            response = await client.get("/get-dict-cookie", cookies=cookies)
-            assert response.status_code == 200
-            data = response.json()
-            assert data["cookie_data"]["user_id"] == "123"
-            assert data["cookie_data"]["role"] == "admin"
+        # Set dictionary cookie
+        response = await client.get("/set-dict-cookie")
+        assert response.status_code == 200
+
+        # Get dictionary cookie
+        cookies = {"test_cookie": response.cookies["test_cookie"]}
+        response = await client.get("/get-dict-cookie", cookies=cookies)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["cookie_data"]["user_id"] == "123"
+        assert data["cookie_data"]["role"] == "admin"
+
+        await client.aclose()
 
 
 class TestCookieStore:
@@ -209,30 +212,31 @@ class TestCookieStore:
             self.cookie_store.delete_value(request, response, "username")
             return {"status": "value_deleted"}
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            # Store value
-            response = await client.get("/store-value")
-            assert response.status_code == 200
-            cookies = dict(response.cookies)
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-            # Get value
-            response = await client.get("/get-value", cookies=cookies)
-            assert response.status_code == 200
-            data = response.json()
-            assert data["username"] == "john_doe"
+        # Store value
+        response = await client.get("/store-value")
+        assert response.status_code == 200
+        cookies = dict(response.cookies)
 
-            # Delete value
-            response = await client.get("/delete-value", cookies=cookies)
-            assert response.status_code == 200
-            updated_cookies = dict(response.cookies)
+        # Get value
+        response = await client.get("/get-value", cookies=cookies)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["username"] == "john_doe"
 
-            # Verify deletion
-            response = await client.get("/get-value", cookies=updated_cookies)
-            assert response.status_code == 200
-            data = response.json()
-            assert data["username"] is None
+        # Delete value
+        response = await client.get("/delete-value", cookies=cookies)
+        assert response.status_code == 200
+        updated_cookies = dict(response.cookies)
+
+        # Verify deletion
+        response = await client.get("/get-value", cookies=updated_cookies)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["username"] is None
+
+        await client.aclose()
 
 
 class TestEnhancedSessionMiddleware:
@@ -253,23 +257,24 @@ class TestEnhancedSessionMiddleware:
             ],
         )
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.get("/cart")
-            assert response.status_code == 200
-            data = response.json()
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-            # Should have session ID
-            assert "session_id" in data
-            assert data["session_id"] is not None
+        response = await client.get("/cart")
+        assert response.status_code == 200
+        data = response.json()
 
-            # Should set secure cookie
-            assert "pyshop_cart_session" in response.cookies
-            cookie_value = response.cookies["pyshop_cart_session"]
+        # Should have session ID
+        assert "session_id" in data
+        assert data["session_id"] is not None
 
-            # Cookie should be signed (contains signature after dot)
-            assert "." in cookie_value
+        # Should set secure cookie
+        assert "pyshop_cart_session" in response.cookies
+        cookie_value = response.cookies["pyshop_cart_session"]
+
+        # Cookie should be signed (contains signature after dot)
+        assert "." in cookie_value
+
+        await client.aclose()
 
     @pytest.mark.asyncio
     async def test_cookie_validation_on_subsequent_requests(self):
@@ -284,21 +289,22 @@ class TestEnhancedSessionMiddleware:
             middleware=[Middleware(SessionMiddleware, secure=False)],
         )
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            # First request - gets new session
-            response1 = await client.get("/cart")
-            session_id1 = response1.json()["session_id"]
-            cookie_value = response1.cookies["pyshop_cart_session"]
+        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-            # Second request with valid cookie
-            cookies = {"pyshop_cart_session": cookie_value}
-            response2 = await client.get("/cart", cookies=cookies)
-            session_id2 = response2.json()["session_id"]
+        # First request - gets new session
+        response1 = await client.get("/cart")
+        session_id1 = response1.json()["session_id"]
+        cookie_value = response1.cookies["pyshop_cart_session"]
 
-            # Should use same session ID
-            assert session_id1 == session_id2
+        # Second request with valid cookie
+        cookies = {"pyshop_cart_session": cookie_value}
+        response2 = await client.get("/cart", cookies=cookies)
+        session_id2 = response2.json()["session_id"]
+
+        # Should use same session ID
+        assert session_id1 == session_id2
+
+        await client.aclose()
 
     @pytest.mark.asyncio
     async def test_tampered_cookie_generates_new_session(self):
@@ -314,26 +320,27 @@ class TestEnhancedSessionMiddleware:
         )
 
         # Use separate clients to avoid cookie jar interference
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client1:
-            # First request - gets new session
-            response1 = await client1.get("/cart")
-            session_id1 = response1.json()["session_id"]
+        client1 = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+        # First request - gets new session
+        response1 = await client1.get("/cart")
+        session_id1 = response1.json()["session_id"]
+        await client1.aclose()
 
         # New client with tampered cookie
-        async with AsyncClient(
+        client2 = AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test", cookies={}
-        ) as client2:
-            # Second request with tampered cookie
-            tampered_cookie = "tampered_session_id.invalid_signature"
-            cookies = {"pyshop_cart_session": tampered_cookie}
-            response2 = await client2.get("/cart", cookies=cookies)
-            session_id2 = response2.json()["session_id"]
+        )
+        # Second request with tampered cookie
+        tampered_cookie = "tampered_session_id.invalid_signature"
+        cookies = {"pyshop_cart_session": tampered_cookie}
+        response2 = await client2.get("/cart", cookies=cookies)
+        session_id2 = response2.json()["session_id"]
 
-            # Should generate new session ID due to invalid cookie
-            assert session_id1 != session_id2
-            assert session_id2 is not None
+        # Should generate new session ID due to invalid cookie
+        assert session_id1 != session_id2
+        assert session_id2 is not None
+
+        await client2.aclose()
 
 
 class TestCookieFactoryFunctions:
