@@ -19,7 +19,7 @@ loguru = "^0.7.3"
 fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
 python-jose = "^3.5.0"
 alembic = "^1.16.5"
-cryptography = "^45.0.7"
+cryptography = "^46.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
