@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from fastapi import FastAPI, Request, Response
 from httpx import AsyncClient, ASGITransport
 from starlette.applications import Starlette
@@ -82,29 +83,34 @@ class TestCookieManager:
 class TestSecureCookie:
     """Test secure cookie functionality."""
 
-    def setup_method(self):
-        """Set up test fixtures."""
-        self.manager = CookieManager(secret_key="test_secret_key_32_characters_long")
-        self.secure_cookie = SecureCookie(
+    @pytest.fixture
+    def cookie_manager(self):
+        """Fixture for cookie manager."""
+        return CookieManager(secret_key="test_secret_key_32_characters_long")
+
+    @pytest.fixture
+    def secure_cookie(self, cookie_manager):
+        """Fixture for secure cookie."""
+        return SecureCookie(
             name="test_cookie",
-            manager=self.manager,
+            manager=cookie_manager,
             encrypt=True,
             sign=True,
         )
 
     @pytest.mark.asyncio
-    async def test_secure_cookie_operations(self):
+    async def test_secure_cookie_operations(self, secure_cookie):
         """Test setting and getting secure cookies."""
         app = FastAPI()
 
         @app.get("/set-cookie")
         async def set_cookie_endpoint(response: Response):
-            self.secure_cookie.set_cookie(response, "test_session_value")
+            secure_cookie.set_cookie(response, "test_session_value")
             return {"status": "cookie_set"}
 
         @app.get("/get-cookie")
         async def get_cookie_endpoint(request: Request):
-            cookie_value = self.secure_cookie.get_cookie(request)
+            cookie_value = secure_cookie.get_cookie(request)
             return {"cookie_value": cookie_value}
 
         client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
@@ -124,13 +130,13 @@ class TestSecureCookie:
         await client.aclose()
 
     @pytest.mark.asyncio
-    async def test_signed_cookie_tamper_protection(self):
+    async def test_signed_cookie_tamper_protection(self, secure_cookie):
         """Test that tampered signed cookies are rejected."""
         app = FastAPI()
 
         @app.get("/get-cookie")
         async def get_cookie_endpoint(request: Request):
-            cookie_value = self.secure_cookie.get_cookie(request)
+            cookie_value = secure_cookie.get_cookie(request)
             return {"cookie_value": cookie_value}
 
         client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
@@ -146,7 +152,7 @@ class TestSecureCookie:
         await client.aclose()
 
     @pytest.mark.asyncio
-    async def test_dictionary_cookie_storage(self):
+    async def test_dictionary_cookie_storage(self, secure_cookie):
         """Test storing dictionary data in cookies."""
         app = FastAPI()
 
@@ -157,12 +163,12 @@ class TestSecureCookie:
                 "role": "admin",
                 "preferences": {"theme": "dark"},
             }
-            self.secure_cookie.set_cookie(response, test_data)
+            secure_cookie.set_cookie(response, test_data)
             return {"status": "cookie_set"}
 
         @app.get("/get-dict-cookie")
         async def get_dict_cookie_endpoint(request: Request):
-            cookie_data = self.secure_cookie.get_cookie_data(request)
+            cookie_data = secure_cookie.get_cookie_data(request)
             return {"cookie_data": cookie_data}
 
         client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
@@ -185,31 +191,32 @@ class TestSecureCookie:
 class TestCookieStore:
     """Test cookie store functionality."""
 
-    def setup_method(self):
-        """Set up test fixtures."""
-        self.cookie_store = CookieStore(
+    @pytest.fixture
+    def cookie_store(self):
+        """Fixture for cookie store."""
+        return CookieStore(
             cookie_name="test_store",
             secret_key="test_secret_key_32_characters_long",
         )
 
     @pytest.mark.asyncio
-    async def test_cookie_store_operations(self):
+    async def test_cookie_store_operations(self, cookie_store):
         """Test cookie store set, get, and delete operations."""
         app = FastAPI()
 
         @app.get("/store-value")
         async def store_value_endpoint(request: Request, response: Response):
-            self.cookie_store.set_value(request, response, "username", "john_doe")
+            cookie_store.set_value(request, response, "username", "john_doe")
             return {"status": "value_stored"}
 
         @app.get("/get-value")
         async def get_value_endpoint(request: Request):
-            username = self.cookie_store.get_value(request, "username")
+            username = cookie_store.get_value(request, "username")
             return {"username": username}
 
         @app.get("/delete-value")
         async def delete_value_endpoint(request: Request, response: Response):
-            self.cookie_store.delete_value(request, response, "username")
+            cookie_store.delete_value(request, response, "username")
             return {"status": "value_deleted"}
 
         client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
