@@ -13,7 +13,7 @@ interface ProvidersProps {
   }
 }
 
-const AllTheProviders = ({ children, initialProps }: ProvidersProps) => {
+const AllTheProviders = ({ children }: ProvidersProps) => {
   // You can add theme providers, router providers, etc. here
   // Example:
   // return (
@@ -38,8 +38,7 @@ const customRender = (
   const { providerProps, ...renderOptions } = options || {}
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <AllTheProviders initialProps={providerProps}>
-      {children}
+    <AllTheProviders children={children} {...(providerProps && { initialProps: providerProps })}>
     </AllTheProviders>
   )
 

@@ -10,10 +10,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    // Mock CSS modules
-    transformMode: {
-      web: [/\.[jt]sx?$/],
-    },
     // Coverage configuration
     coverage: {
       provider: 'v8',

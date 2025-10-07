@@ -14,6 +14,7 @@ GIT_SHA: str = os.getenv("GIT_SHA", "unknown")
 # CORS Configuration - restrictive origins
 CORS_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",  # Frontend in Docker
     "http://localhost:8080",
     "https://yourdomain.com",
 ]
