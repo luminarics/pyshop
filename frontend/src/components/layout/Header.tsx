@@ -33,11 +33,25 @@ export function Header() {
     setIsAuthenticated(authStorage.isAuthenticated());
   }, []);
 
-  const handleLogout = () => {
-    authStorage.removeToken();
-    setIsAuthenticated(false);
-    toast.success("Logged out successfully");
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      const token = authStorage.getToken();
+      if (token) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/auth/jwt/logout`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      authStorage.removeToken();
+      setIsAuthenticated(false);
+      toast.success("Logged out successfully");
+      router.push("/");
+    }
   };
 
   return (

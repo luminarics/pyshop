@@ -2,7 +2,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import products, profile, cart
+from app.routers import products, profile, cart, auth
 from app.database import init_db
 from app.core.config import GIT_SHA, CORS_ORIGINS
 from app.middleware import SessionMiddleware
@@ -47,6 +47,8 @@ instrumentator.expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 # Routers
+app.include_router(auth.router)
+
 app.include_router(products.router)
 
 app.include_router(profile.router)
