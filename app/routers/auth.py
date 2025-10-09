@@ -5,7 +5,7 @@ from app.auth.user_manager import get_user_manager
 from app.auth.backend import auth_backend
 from uuid import UUID
 
-fastapi_users: FastAPIUsers[User, UUID] = FastAPIUsers(  # type: ignore[misc]
+fastapi_users = FastAPIUsers[User, UUID](  # type: ignore[type-var]
     get_user_manager,
     [auth_backend],
 )
