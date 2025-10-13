@@ -21,4 +21,15 @@ export interface User {
   is_active: boolean;
   is_superuser: boolean;
   is_verified: boolean;
+  avatar_url: string | null;
+}
+
+export interface UpdateProfileRequest {
+  email?: string;
+  username?: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
 }

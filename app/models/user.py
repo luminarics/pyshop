@@ -26,12 +26,14 @@ class User(SQLAlchemyBaseUserTable[UUID], Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    avatar_url: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
 
 
 class UserRead(schemas.BaseUser[UUID]):
     username: str = Field(
         ..., min_length=3, max_length=50, description="Username between 3-50 characters"
     )
+    avatar_url: str | None = Field(None, description="URL to user's avatar image")
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -104,4 +106,26 @@ class UserUpdate(schemas.BaseUserUpdate):
                 raise ValueError("Password must contain at least one lowercase letter")
             if not re.search(r"\d", v):
                 raise ValueError("Password must contain at least one digit")
+        return v
+
+
+class ChangePasswordRequest(schemas.BaseModel):
+    current_password: str = Field(..., description="Current password for verification")
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="New password must be 8-128 characters",
+    )
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
         return v
