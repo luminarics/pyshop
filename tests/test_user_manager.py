@@ -8,11 +8,10 @@ from app.auth.user_manager import UserManager, get_user_manager
 from app.models.user import User, UserCreate
 
 
-@pytest.mark.asyncio
 class TestUserManager:
     """Test UserManager class functionality."""
 
-    async def test_user_manager_has_secrets(self):
+    def test_user_manager_has_secrets(self):
         """Test UserManager is configured with secret keys."""
         user_db = AsyncMock()
         manager = UserManager(user_db)
@@ -21,6 +20,7 @@ class TestUserManager:
         assert manager.verification_token_secret is not None
         assert manager.reset_password_token_secret == manager.verification_token_secret
 
+    @pytest.mark.asyncio
     async def test_on_after_register_callback(self, capsys):
         """Test on_after_register callback is called after user registration."""
         user_db = AsyncMock()
@@ -45,7 +45,7 @@ class TestUserManager:
         captured = capsys.readouterr()
         assert f"User {user_id} has registered." in captured.out
 
-    async def test_user_manager_inheritance(self):
+    def test_user_manager_inheritance(self):
         """Test UserManager inherits from required base classes."""
         user_db = AsyncMock()
         manager = UserManager(user_db)
@@ -53,6 +53,7 @@ class TestUserManager:
         # Check that UserManager has UUIDIDMixin methods
         assert hasattr(manager, "parse_id")
 
+    @pytest.mark.asyncio
     async def test_get_user_manager_dependency(self):
         """Test get_user_manager dependency yields UserManager instance."""
         mock_user_db = AsyncMock()
