@@ -36,6 +36,13 @@ jobs:
     - name: Install dependencies
       run: poetry install --no-interaction --with dev
 
+    - name: Verify installation
+      run: |
+        poetry run python --version
+        poetry run ruff --version
+        poetry run black --version
+        poetry run mypy --version
+
     - name: Ruff & Black & mypy
       run: |
         poetry run ruff check .
