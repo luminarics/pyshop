@@ -500,3 +500,145 @@ class TestAuthenticationFlow:
             headers={"Authorization": f"Bearer {token2}"},
         )
         assert me2.json()["username"] == "user2"
+
+    async def test_logout_and_relogin_flow(self, client: AsyncClient):
+        """Test user can logout and login again with same credentials."""
+        # Register user
+        await client.post(
+            "/auth/register",
+            json={
+                "email": "relogin@example.com",
+                "username": "reloginuser",
+                "password": "SecurePass123",
+            },
+        )
+
+        # First login
+        login1 = await client.post(
+            "/auth/jwt/login",
+            data={"username": "relogin@example.com", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        assert login1.status_code == 200
+        token1 = login1.json()["access_token"]
+
+        # Logout
+        logout_response = await client.post(
+            "/auth/jwt/logout",
+            headers={"Authorization": f"Bearer {token1}"},
+        )
+        assert logout_response.status_code in [200, 204]
+
+        # Login again
+        login2 = await client.post(
+            "/auth/jwt/login",
+            data={"username": "relogin@example.com", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        assert login2.status_code == 200
+        token2 = login2.json()["access_token"]
+
+        # Verify new token works
+        me_response = await client.get(
+            "/users/me",
+            headers={"Authorization": f"Bearer {token2}"},
+        )
+        assert me_response.status_code == 200
+        assert me_response.json()["email"] == "relogin@example.com"
+
+    async def test_profile_update_preserves_authentication(self, client: AsyncClient):
+        """Test user can still authenticate after updating profile."""
+        # Register and login
+        await client.post(
+            "/auth/register",
+            json={
+                "email": "profileupdate@example.com",
+                "username": "originalname",
+                "password": "SecurePass123",
+            },
+        )
+
+        login_response = await client.post(
+            "/auth/jwt/login",
+            data={"username": "profileupdate@example.com", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        token = login_response.json()["access_token"]
+
+        # Update username
+        update_response = await client.patch(
+            "/users/me",
+            json={"username": "updatedname"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert update_response.status_code == 200
+
+        # Verify token still works after update
+        me_response = await client.get(
+            "/users/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert me_response.status_code == 200
+        assert me_response.json()["username"] == "updatedname"
+        assert me_response.json()["email"] == "profileupdate@example.com"
+
+        # Verify can login with updated credentials
+        new_login = await client.post(
+            "/auth/jwt/login",
+            data={"username": "profileupdate@example.com", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        assert new_login.status_code == 200
+
+    async def test_case_insensitive_email_login(self, client: AsyncClient):
+        """Test login works with different email casing."""
+        # Register with lowercase email
+        await client.post(
+            "/auth/register",
+            json={
+                "email": "casetest@example.com",
+                "username": "caseuser",
+                "password": "SecurePass123",
+            },
+        )
+
+        # Try login with uppercase email
+        response = await client.post(
+            "/auth/jwt/login",
+            data={"username": "CASETEST@EXAMPLE.COM", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+        # Should succeed (email lookup should be case-insensitive)
+        assert response.status_code == 200
+        assert "access_token" in response.json()
+
+    async def test_token_can_access_multiple_endpoints(self, client: AsyncClient):
+        """Test a single token can access multiple protected endpoints."""
+        # Register and login
+        await client.post(
+            "/auth/register",
+            json={
+                "email": "multiendpoint@example.com",
+                "username": "multiuser",
+                "password": "SecurePass123",
+            },
+        )
+
+        login_response = await client.post(
+            "/auth/jwt/login",
+            data={"username": "multiendpoint@example.com", "password": "SecurePass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        token = login_response.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # Access multiple protected endpoints with same token
+        products_response = await client.get("/products/", headers=headers)
+        assert products_response.status_code == 200
+
+        profile_response = await client.get("/users/me", headers=headers)
+        assert profile_response.status_code == 200
+
+        # Verify consistent user data across endpoints
+        assert profile_response.json()["email"] == "multiendpoint@example.com"
