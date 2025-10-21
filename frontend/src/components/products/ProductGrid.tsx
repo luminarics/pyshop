@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import type { Product } from "@/types";
 
 interface ProductGridLayoutProps {
@@ -25,6 +26,13 @@ interface ProductGridLayoutProps {
   showSearch?: boolean;
   showSort?: boolean;
   showFilters?: boolean;
+  showPagination?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
+  total?: number;
   emptyMessage?: string;
   className?: string;
 }
@@ -40,6 +48,13 @@ export function ProductGridLayout({
   showSearch = true,
   showSort = true,
   showFilters = true,
+  showPagination = false,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
+  pageSize = 10,
+  onPageSizeChange,
+  total,
   emptyMessage = "No products found",
   className,
 }: ProductGridLayoutProps) {
@@ -63,9 +78,11 @@ export function ProductGridLayout({
 
     // Price filter
     if (priceFilter !== "all") {
-      const [min, max] = priceFilter.split("-").map(Number);
+      const [minStr, maxStr] = priceFilter.split("-");
+      const min = Number(minStr);
+      const max = maxStr ? Number(maxStr) : undefined;
       filtered = filtered.filter((product) => {
-        if (max) {
+        if (max !== undefined) {
           return product.price >= min && product.price <= max;
         }
         return product.price >= min;
@@ -200,11 +217,13 @@ export function ProductGridLayout({
           )}
 
           {/* Results Count */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              Showing {filteredProducts.length} of {products.length} products
-            </span>
-          </div>
+          {!showPagination && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>
+                Showing {filteredProducts.length} of {products.length} products
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -221,9 +240,9 @@ export function ProductGridLayout({
             <ProductCard
               key={product.id}
               product={product}
-              onAddToCart={onAddToCart}
+              {...(onAddToCart && { onAddToCart })}
               cartQuantity={cartItems.get(product.id) || 0}
-              onUpdateQuantity={onUpdateQuantity}
+              {...(onUpdateQuantity && { onUpdateQuantity })}
             />
           ))}
         </Grid>
@@ -241,6 +260,21 @@ export function ProductGridLayout({
           )}
         </div>
       )}
+
+      {/* Pagination */}
+      {showPagination && !isLoading && filteredProducts.length > 0 && totalPages > 1 && onPageChange && (
+        <div className="mt-8">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            pageSize={pageSize}
+            {...(onPageSizeChange && { onPageSizeChange })}
+            {...(total !== undefined && { total })}
+            showPageSizeSelector={!!onPageSizeChange}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -254,7 +288,7 @@ export function SimpleProductGrid({
 }: Pick<ProductGridLayoutProps, "products" | "isLoading" | "onAddToCart" | "className">) {
   if (isLoading) {
     return (
-      <Grid className={className}>
+      <Grid {...(className && { className })}>
         {Array.from({ length: 4 }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -263,12 +297,12 @@ export function SimpleProductGrid({
   }
 
   return (
-    <Grid className={className}>
+    <Grid {...(className && { className })}>
       {products.map((product) => (
         <ProductCard
           key={product.id}
           product={product}
-          onAddToCart={onAddToCart}
+          {...(onAddToCart && { onAddToCart })}
         />
       ))}
     </Grid>

@@ -11,8 +11,23 @@ import type { Product } from "@/types";
 import { ResponsiveContainer, ResponsiveText } from "@/components/ui/responsive-grid";
 
 function ProductsPageContent() {
-  const { products, isLoading, error, refetch } = useProducts();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const { products, isLoading, error, refetch, total, totalPages } = useProducts({
+    page,
+    limit: pageSize,
+  });
   const [cartItems, setCartItems] = useState<Map<number, number>>(new Map());
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1); // Reset to first page when changing page size
+  };
 
   const handleAddToCart = (product: Product) => {
     setCartItems((prev) => {
@@ -97,12 +112,19 @@ function ProductsPageContent() {
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <p className="font-semibold text-destructive">Error loading products</p>
-              <p className="text-sm text-muted-foreground">{error}</p>
+              <p className="text-sm text-muted-foreground">{error.message}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               Retry
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {!isLoading && total > 0 && (
+        <div className="mb-4 text-sm text-muted-foreground">
+          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, total)} of {total} products
         </div>
       )}
 
@@ -116,6 +138,13 @@ function ProductsPageContent() {
         showSearch={true}
         showSort={true}
         showFilters={true}
+        showPagination={true}
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        total={total}
         emptyMessage={
           error
             ? "Unable to load products. Please try again."

@@ -6,8 +6,9 @@ import { authApi } from "@/lib/api";
 import { isTokenExpired, isTokenExpiringSoon } from "@/lib/jwt";
 import type { User } from "@/types/auth";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
@@ -130,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
+    token: authStorage.getToken(),
     isAuthenticated: !!user,
     isLoading,
     login,

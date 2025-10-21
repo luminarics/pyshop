@@ -41,4 +41,7 @@ export const config = {
   },
 } as const;
 
+// Export commonly used values
+export const API_BASE_URL = config.api.baseUrl;
+
 export default config;
