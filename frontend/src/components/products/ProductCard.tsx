@@ -30,6 +30,7 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const handleAddToCart = () => {
+    console.log("ProductCard handleAddToCart called", { product, hasCallback: !!onAddToCart });
     onAddToCart?.(product);
   };
 

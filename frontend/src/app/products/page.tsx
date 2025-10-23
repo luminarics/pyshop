@@ -9,6 +9,9 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 import { ResponsiveContainer, ResponsiveText } from "@/components/ui/responsive-grid";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { cartApi, ApiError } from "@/lib/api";
+import { authStorage } from "@/lib/auth";
 
 function ProductsPageContent() {
   const [page, setPage] = useState(1);
@@ -17,6 +20,7 @@ function ProductsPageContent() {
     page,
     limit: pageSize,
   });
+  const queryClient = useQueryClient();
   const [cartItems, setCartItems] = useState<Map<number, number>>(new Map());
 
   const handlePageChange = (newPage: number) => {
@@ -29,14 +33,42 @@ function ProductsPageContent() {
     setPage(1); // Reset to first page when changing page size
   };
 
+  // Add to cart mutation
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: number; quantity: number }) => {
+      console.log("Mutation starting for product:", productId);
+      const token = authStorage.getToken();
+      console.log("Token exists:", !!token);
+      if (!token) throw new Error("Not authenticated");
+      return cartApi.addItem(token, { product_id: productId, quantity });
+    },
+    onSuccess: (data, variables) => {
+      console.log("Add to cart successful:", data);
+      const product = products.find((p) => p.id === variables.productId);
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success(`${product?.name || "Product"} added to cart`);
+
+      // Update local state for UI
+      setCartItems((prev) => {
+        const newCart = new Map(prev);
+        const currentQuantity = newCart.get(variables.productId) || 0;
+        newCart.set(variables.productId, currentQuantity + variables.quantity);
+        return newCart;
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Add to cart error:", error);
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to add item to cart");
+      }
+    },
+  });
+
   const handleAddToCart = (product: Product) => {
-    setCartItems((prev) => {
-      const newCart = new Map(prev);
-      const currentQuantity = newCart.get(product.id) || 0;
-      newCart.set(product.id, currentQuantity + 1);
-      return newCart;
-    });
-    toast.success(`${product.name} added to cart`);
+    console.log("Add to cart clicked:", product);
+    addToCartMutation.mutate({ productId: product.id, quantity: 1 });
   };
 
   const handleUpdateQuantity = (product: Product, quantity: number) => {
