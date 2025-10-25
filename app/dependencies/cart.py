@@ -105,3 +105,15 @@ async def get_cart_by_id(
     # but that requires access to the current session
     # For now, return the cart (will be handled by route-level validation)
     return cart
+
+
+async def get_user_cart(
+    user_id: UUID,
+    session: AsyncSession,
+) -> Optional[Cart]:
+    """
+    Get user's active cart directly by user ID.
+    Used for checkout where we need to access authenticated user's cart.
+    """
+    cart_service = CartService(session)
+    return await cart_service.get_or_create_cart(user_id=user_id)

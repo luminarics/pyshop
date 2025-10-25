@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routers import products, profile, cart, auth
+from app.routers import products, profile, cart, auth, orders
 from app.database import init_db
 from app.core.config import GIT_SHA, CORS_ORIGINS
 from app.middleware import SessionMiddleware
@@ -56,6 +56,8 @@ app.include_router(products.router)
 app.include_router(profile.router)
 
 app.include_router(cart.router)
+
+app.include_router(orders.router)
 
 # Mount static files for avatars
 uploads_dir = Path("uploads")

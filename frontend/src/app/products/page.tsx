@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShoppingBag, Plus, RefreshCw } from "lucide-react";
+import { ShoppingBag, RefreshCw, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { ProductGridLayout } from "@/components/products";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
@@ -106,17 +107,25 @@ function ProductsPageContent() {
         <div className="flex items-center gap-4">
           {/* Cart Summary */}
           {totalItems > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
-              <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-              <div className="text-sm">
-                <span className="font-semibold">{totalItems}</span> item
-                {totalItems !== 1 ? "s" : ""}
-                <span className="mx-1">·</span>
-                <span className="font-semibold">
-                  ${totalPrice.toFixed(2)}
-                </span>
+            <>
+              <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
+                <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                <div className="text-sm">
+                  <span className="font-semibold">{totalItems}</span> item
+                  {totalItems !== 1 ? "s" : ""}
+                  <span className="mx-1">·</span>
+                  <span className="font-semibold">
+                    ${totalPrice.toFixed(2)}
+                  </span>
+                </div>
               </div>
-            </div>
+              <Button size="sm" className="gap-2" asChild>
+                <Link href="/cart">
+                  View Cart
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </>
           )}
 
           {/* Refresh Button */}
@@ -128,12 +137,6 @@ function ProductsPageContent() {
             aria-label="Refresh products"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          </Button>
-
-          {/* Add Product Button (admin feature - placeholder) */}
-          <Button variant="default">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Product
           </Button>
         </div>
       </div>
