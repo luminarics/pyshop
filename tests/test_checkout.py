@@ -25,8 +25,8 @@ async def test_checkout_creates_order(client: AsyncClient, async_session: AsyncS
     async_session.add(user)
 
     # Create test products
-    product1 = Product(name="Product 1", price=10.99, description="Test product 1")
-    product2 = Product(name="Product 2", price=20.50, description="Test product 2")
+    product1 = Product(name="Product 1", price=10.99)
+    product2 = Product(name="Product 2", price=20.50)
     async_session.add(product1)
     async_session.add(product2)
     await async_session.commit()
@@ -182,7 +182,7 @@ async def test_get_orders_list(client: AsyncClient, async_session: AsyncSession)
     async_session.add(user)
 
     # Create test product
-    product = Product(name="Test Product", price=15.00, description="Test")
+    product = Product(name="Test Product", price=15.00)
     async_session.add(product)
     await async_session.commit()
     await async_session.refresh(product)
@@ -269,7 +269,7 @@ async def test_get_order_by_id(client: AsyncClient, async_session: AsyncSession)
     async_session.add(user)
 
     # Create product
-    product = Product(name="Test Product", price=25.00, description="Test")
+    product = Product(name="Test Product", price=25.00)
     async_session.add(product)
     await async_session.commit()
     await async_session.refresh(product)
