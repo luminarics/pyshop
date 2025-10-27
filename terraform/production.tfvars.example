@@ -1,0 +1,44 @@
+# Production Environment Configuration
+
+project_name = "pyshop"
+environment  = "production"
+aws_region   = "us-east-1"
+
+# Networking - Full redundancy
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+enable_nat_gateway   = true
+
+# Application
+app_image = "<account-id>.dkr.ecr.us-east-1.amazonaws.com/pyshop-api:latest"
+app_port  = 8000
+app_count = 3 # Multiple instances for high availability
+
+# ECS Fargate - Production-grade resources
+fargate_cpu    = "1024" # 1 vCPU
+fargate_memory = "2048" # 2 GB
+
+# Auto Scaling - Active scaling
+autoscaling_min_capacity = 3
+autoscaling_max_capacity = 15
+
+# Database - Production-grade
+db_name              = "pyshop"
+db_username          = "app"
+db_instance_class    = "db.t4g.small" # or db.m6g.large for higher load
+db_allocated_storage = 100
+db_engine_version    = "15.5"
+db_multi_az          = true # High availability
+
+# Logging - Extended retention for compliance
+log_retention_days = 30
+
+# DNS & SSL - Enabled for production
+enable_ssl          = true
+domain_name         = "api.yourdomain.com"
+create_route53_zone = false # Set to true if you need a new zone
+route53_zone_id     = "Z1234567890ABC" # Your existing Route53 zone ID
+
+# Application Configuration
+jwt_expire_minutes = 30

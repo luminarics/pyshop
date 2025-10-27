@@ -1,0 +1,76 @@
+# Ultra Low Cost Configuration (~$30-40/month)
+# This configuration minimizes costs for development/staging environments
+
+project_name = "pyshop"
+environment  = "dev"
+aws_region   = "us-east-1"
+
+# Networking - Minimal setup
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+
+# Cost optimization: Single NAT gateway (not HA)
+enable_nat_gateway = true
+single_nat_gateway = true  # Saves ~$33/month vs 2 NAT gateways
+
+# Cost optimization: Use VPC endpoints to reduce NAT data transfer
+enable_vpc_endpoints = true  # Adds ~$7/month but saves on data transfer
+
+# Application - Minimal resources
+app_image = "<account-id>.dkr.ecr.us-east-1.amazonaws.com/pyshop-api:dev"
+app_port  = 8000
+app_count = 1  # Single instance
+
+# ECS Fargate - Smallest possible configuration
+fargate_cpu    = "256"  # 0.25 vCPU (minimum)
+fargate_memory = "512"  # 0.5 GB (minimum)
+
+# Cost optimization: Use Fargate Spot for 70% savings
+enable_fargate_spot  = true
+fargate_spot_weight  = 100  # 100% Spot instances
+fargate_base_tasks   = 0    # No guaranteed on-demand tasks
+
+# Auto Scaling - Minimal
+autoscaling_min_capacity = 1
+autoscaling_max_capacity = 2  # Scale up to 2 only if needed
+
+# Database - Cheapest option: RDS t4g.micro
+use_aurora_serverless = false  # Aurora is more expensive for constant low traffic
+db_name               = "pyshop_dev"
+db_username           = "app"
+db_instance_class     = "db.t4g.micro"  # ~$12/month
+db_allocated_storage  = 20              # Minimum
+db_engine_version     = "15.5"
+db_multi_az           = false           # Single-AZ only
+
+# Logging - Minimal retention
+log_retention_days = 3  # Keep logs for 3 days only
+
+# DNS & SSL - Disabled for cost savings
+enable_ssl          = false  # Use ALB DNS directly
+domain_name         = ""
+create_route53_zone = false
+route53_zone_id     = ""
+
+# Application Configuration
+jwt_expire_minutes = 30
+
+# ---
+# COST BREAKDOWN (Estimated monthly):
+# - ECS Fargate Spot (1 task, 0.25 vCPU, 0.5 GB): ~$2.50/month
+# - RDS db.t4g.micro (Single-AZ): ~$12/month
+# - Application Load Balancer: ~$20/month
+# - NAT Gateway (1): ~$33/month
+# - VPC Endpoints (5 interface): ~$7/month
+# - CloudWatch Logs (minimal): ~$1/month
+# - Data Transfer: ~$2/month
+#
+# TOTAL: ~$77.50/month
+#
+# To reduce further:
+# 1. Disable NAT gateway if ECS tasks don't need internet ($33 savings)
+#    - Set enable_nat_gateway = false
+#    - Requires VPC endpoints for AWS services
+# 2. Use Aurora Serverless v2 with auto-pause (not available yet)
+# 3. Consider AWS App Runner instead of ECS+ALB (~$25/month total)

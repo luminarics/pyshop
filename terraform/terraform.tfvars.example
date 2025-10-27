@@ -1,0 +1,43 @@
+# General Configuration
+project_name = "pyshop"
+environment  = "dev"
+aws_region   = "us-east-1"
+
+# Networking
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+enable_nat_gateway   = true
+
+# Application
+app_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/pyshop-api:latest"
+app_port  = 8000
+app_count = 2
+
+# ECS Fargate Resources
+fargate_cpu    = "512"  # 0.5 vCPU
+fargate_memory = "1024" # 1 GB
+
+# Auto Scaling
+autoscaling_min_capacity = 2
+autoscaling_max_capacity = 10
+
+# Database
+db_name             = "pyshop"
+db_username         = "app"
+db_instance_class   = "db.t4g.micro"
+db_allocated_storage = 20
+db_engine_version   = "15.5"
+db_multi_az         = false # Set to true for production
+
+# Logging
+log_retention_days = 7 # Set to 30 or more for production
+
+# DNS & SSL (set these to enable HTTPS)
+enable_ssl          = false
+domain_name         = "" # e.g., "api.example.com"
+create_route53_zone = false
+route53_zone_id     = "" # Required if create_route53_zone is false and enable_ssl is true
+
+# Application Configuration
+jwt_expire_minutes = 30
