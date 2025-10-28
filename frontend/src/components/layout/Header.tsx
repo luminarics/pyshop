@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingCartIcon, UserIcon, MenuIcon, SearchIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { authStorage } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   NavigationMenu,
@@ -27,30 +27,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Header() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setIsAuthenticated(authStorage.isAuthenticated());
-  }, []);
+  const { isAuthenticated, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const token = authStorage.getToken();
-      if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/auth/jwt/logout`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      authStorage.removeToken();
-      setIsAuthenticated(false);
+      await logout();
       toast.success("Logged out successfully");
       router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
     }
   };
 

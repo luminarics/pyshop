@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { authApi, ApiError } from "@/lib/api";
-import { authStorage } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
@@ -23,6 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -36,16 +36,11 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await authApi.login(data);
-      authStorage.setToken(response.access_token);
+      await login(data.username, data.password);
       toast.success("Login successful!");
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error("An unexpected error occurred");
-      }
+      toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
       setIsLoading(false);
     }

@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { authApi, ApiError } from "@/lib/api";
-import { authStorage } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const registerSchema = z.object({
@@ -36,6 +35,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -49,28 +49,12 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      await authApi.register({
-        email: data.email,
-        username: data.username,
-        password: data.password,
-      });
-
-      // Auto-login after successful registration
-      // FastAPI-Users uses email for authentication, not username
-      const loginResponse = await authApi.login({
-        username: data.email, // Send email as 'username' field
-        password: data.password,
-      });
-
-      authStorage.setToken(loginResponse.access_token);
+      // AuthContext's register function auto-logs in after registration
+      await registerUser(data.email, data.username, data.password);
       toast.success("Registration successful! Welcome!");
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error("An unexpected error occurred");
-      }
+      toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
       setIsLoading(false);
     }

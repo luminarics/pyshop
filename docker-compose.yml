@@ -43,10 +43,10 @@ services:
       - api
     environment:
       NEXT_PUBLIC_API_URL: http://api:8000
-    ports: ["3001:3000"]
+    ports: ["3000:3000"]
     restart: on-failure
 
   grafana:
     image: grafana/grafana
     depends_on: [prometheus]
-    ports: ["3000:3000"]
+    ports: ["3002:3000"]
