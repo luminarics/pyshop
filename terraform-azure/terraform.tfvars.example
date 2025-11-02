@@ -1,0 +1,52 @@
+# Project Configuration
+project_name = "pyshop"
+environment  = "dev"
+location     = "eastus"
+
+# Networking
+vnet_address_space       = ["10.0.0.0/16"]
+subnet_address_prefix    = "10.0.1.0/24"
+db_subnet_address_prefix = "10.0.2.0/24"
+
+# Database Configuration
+postgres_version                = "16"
+postgres_sku_name              = "B_Standard_B1ms"  # B_Standard_B1ms for dev, GP_Standard_D2s_v3 for production
+postgres_storage_mb            = 32768              # 32GB
+postgres_backup_retention_days = 7
+postgres_geo_redundant_backup  = false
+postgres_high_availability     = false
+db_name                        = "fastapi"
+db_admin_username              = "psqladmin"
+
+# Application Configuration
+use_container_apps = true  # true for Container Apps (recommended), false for App Service
+app_cpu            = "0.5"
+app_memory         = "1Gi"
+app_min_replicas   = 1
+app_max_replicas   = 10
+
+# Container Registry
+acr_sku = "Basic"  # Basic, Standard, or Premium
+
+# Container Image
+# Leave empty to use ACR + default image name
+# Or specify full image path: <registry>.azurecr.io/pyshop-api:latest
+container_image = ""
+
+# Application Secrets
+# Generate a secure random string for production
+secret_key                   = ""  # Leave empty to auto-generate
+access_token_expire_minutes  = 30
+
+# Monitoring
+log_retention_days = 30
+
+# Security
+allowed_ip_ranges = ["0.0.0.0/0"]  # Restrict this in production
+enable_ddos_protection = false     # Enable for production (additional cost)
+
+# Additional Tags
+additional_tags = {
+  Owner = "DevOps Team"
+  CostCenter = "Engineering"
+}

@@ -11,6 +11,10 @@ class Product(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     price: Mapped[float] = mapped_column(Float)
+    category: Mapped[str] = mapped_column(String, index=True, default="general")
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    stock: Mapped[int] = mapped_column(default=100)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
 
@@ -26,6 +30,27 @@ class ProductBase(BaseModel):
         gt=0,
         le=999999.99,
         description="Product price must be positive and <= 999999.99",
+    )
+    category: str = Field(
+        default="general",
+        min_length=1,
+        max_length=50,
+        description="Product category",
+    )
+    description: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="Product description",
+    )
+    image_url: str | None = Field(
+        default=None,
+        max_length=500,
+        description="Product image URL",
+    )
+    stock: int = Field(
+        default=100,
+        ge=0,
+        description="Product stock quantity",
     )
 
     @field_validator("name")
@@ -65,6 +90,27 @@ class ProductUpdate(BaseModel):
         gt=0,
         le=999999.99,
         description="Product price must be positive and <= 999999.99",
+    )
+    category: str | None = Field(
+        None,
+        min_length=1,
+        max_length=50,
+        description="Product category",
+    )
+    description: str | None = Field(
+        None,
+        max_length=1000,
+        description="Product description",
+    )
+    image_url: str | None = Field(
+        None,
+        max_length=500,
+        description="Product image URL",
+    )
+    stock: int | None = Field(
+        None,
+        ge=0,
+        description="Product stock quantity",
     )
     model_config = ConfigDict(from_attributes=True)
 

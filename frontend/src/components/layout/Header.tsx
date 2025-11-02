@@ -194,12 +194,14 @@ export function Header() {
           </Button>
 
           {/* Cart */}
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCartIcon className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
-              2
-            </span>
-            <span className="sr-only">Shopping cart</span>
+          <Button variant="ghost" size="icon" className="relative" asChild>
+            <Link href="/cart">
+              <ShoppingCartIcon className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                2
+              </span>
+              <span className="sr-only">Shopping cart</span>
+            </Link>
           </Button>
 
           {/* User Menu / Auth Buttons */}

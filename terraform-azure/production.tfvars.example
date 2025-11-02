@@ -1,0 +1,42 @@
+# Production Environment Configuration
+project_name = "pyshop"
+environment  = "prod"
+location     = "eastus"
+
+# Networking
+vnet_address_space       = ["10.0.0.0/16"]
+subnet_address_prefix    = "10.0.1.0/24"
+db_subnet_address_prefix = "10.0.2.0/24"
+
+# Database - Production Configuration with HA
+postgres_version                = "16"
+postgres_sku_name              = "GP_Standard_D2s_v3"  # General Purpose
+postgres_storage_mb            = 131072                # 128GB
+postgres_backup_retention_days = 35                    # 5 weeks
+postgres_geo_redundant_backup  = true
+postgres_high_availability     = true                  # Zone-redundant
+
+# Application - High Availability
+use_container_apps = true
+app_cpu            = "1.0"
+app_memory         = "2Gi"
+app_min_replicas   = 2
+app_max_replicas   = 20
+
+# Container Registry - Standard Tier
+acr_sku = "Standard"
+
+# Monitoring
+log_retention_days = 90  # 3 months
+
+# Security - CONFIGURE YOUR IP RANGES
+allowed_ip_ranges = [
+  "0.0.0.0/0"  # CHANGE THIS - Restrict to your organization's IP ranges
+]
+enable_ddos_protection = true  # Recommended for production
+
+additional_tags = {
+  Owner = "Platform Team"
+  Purpose = "Production"
+  Compliance = "Required"
+}

@@ -8,6 +8,7 @@ import type { Product } from "@/types";
 interface UseProductsParams {
   page?: number;
   limit?: number;
+  category?: string;
 }
 
 interface PaginatedProductsResponse {
@@ -32,14 +33,24 @@ interface UseProductsReturn {
 async function fetchProducts(
   token: string | null,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  category?: string
 ): Promise<PaginatedProductsResponse> {
   if (!token) {
     throw new Error("Not authenticated");
   }
 
+  const params = new URLSearchParams({
+    skip: ((page - 1) * limit).toString(),
+    limit: limit.toString(),
+  });
+
+  if (category) {
+    params.append("category", category);
+  }
+
   const response = await fetch(
-    `${API_BASE_URL}/products/?skip=${(page - 1) * limit}&limit=${limit}`,
+    `${API_BASE_URL}/products/?${params.toString()}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -75,7 +86,7 @@ async function fetchProducts(
 }
 
 export function useProducts(params: UseProductsParams = {}): UseProductsReturn {
-  const { page = 1, limit = 10 } = params;
+  const { page = 1, limit = 10, category } = params;
   const { token } = useAuth();
 
   const {
@@ -84,8 +95,8 @@ export function useProducts(params: UseProductsParams = {}): UseProductsReturn {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products", page, limit],
-    queryFn: () => fetchProducts(token, page, limit),
+    queryKey: ["products", page, limit, category],
+    queryFn: () => fetchProducts(token, page, limit, category),
     enabled: !!token,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

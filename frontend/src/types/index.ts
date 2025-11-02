@@ -31,8 +31,12 @@ export interface Product {
   id: number;
   name: string;
   price: number;
+  category: string;
+  description?: string;
+  image_url?: string;
+  stock: number;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface CartItem {

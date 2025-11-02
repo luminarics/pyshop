@@ -1,0 +1,39 @@
+# Development Environment Configuration
+project_name = "pyshop"
+environment  = "dev"
+location     = "eastus"
+
+# Networking
+vnet_address_space       = ["10.0.0.0/16"]
+subnet_address_prefix    = "10.0.1.0/24"
+db_subnet_address_prefix = "10.0.2.0/24"
+
+# Database - Minimal Configuration for Development
+postgres_version                = "16"
+postgres_sku_name              = "B_Standard_B1ms"  # Burstable tier
+postgres_storage_mb            = 32768              # 32GB
+postgres_backup_retention_days = 7
+postgres_geo_redundant_backup  = false
+postgres_high_availability     = false
+
+# Application - Single Instance
+use_container_apps = true
+app_cpu            = "0.25"
+app_memory         = "0.5Gi"
+app_min_replicas   = 1
+app_max_replicas   = 3
+
+# Container Registry - Basic Tier
+acr_sku = "Basic"
+
+# Monitoring
+log_retention_days = 30
+
+# Security - Open for Development (RESTRICT IN PRODUCTION!)
+allowed_ip_ranges = ["0.0.0.0/0"]
+enable_ddos_protection = false
+
+additional_tags = {
+  Owner = "Development Team"
+  Purpose = "Development"
+}

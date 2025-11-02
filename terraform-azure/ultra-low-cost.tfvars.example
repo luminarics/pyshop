@@ -1,0 +1,72 @@
+# Ultra Low Cost Configuration (~$25-35/month)
+# Optimized for side projects, learning, and development
+# Trade-offs: Cold starts, no HA, minimal logging
+
+project_name = "pyshop"
+environment  = "dev"
+location     = "eastus"  # Typically lowest cost region
+
+# Networking - Minimal configuration
+vnet_address_space       = ["10.0.0.0/16"]
+subnet_address_prefix    = "10.0.1.0/24"
+db_subnet_address_prefix = "10.0.2.0/24"
+
+# Database - Smallest possible configuration (~$12/month)
+postgres_version                = "16"
+postgres_sku_name              = "B_Standard_B1ms"  # Burstable tier
+postgres_storage_mb            = 32768              # 32GB minimum
+postgres_backup_retention_days = 7                  # Minimum retention
+postgres_geo_redundant_backup  = false              # No geo-redundancy
+postgres_high_availability     = false              # Single zone only
+db_name                        = "fastapi"
+db_admin_username              = "psqladmin"
+
+# Application - Scale to zero when not in use (~$0-20/month)
+use_container_apps = true
+app_cpu            = "0.25"  # Quarter vCPU
+app_memory         = "0.5Gi" # 512MB RAM
+app_min_replicas   = 0       # SCALE TO ZERO - saves money but causes cold starts
+app_max_replicas   = 2       # Limit scaling
+
+# Container Registry - Basic tier (~$5/month)
+acr_sku = "Basic"
+
+# Container Image
+container_image = ""
+
+# Application Secrets
+secret_key                  = ""  # Auto-generate
+access_token_expire_minutes = 30
+
+# Monitoring - Minimal retention (~$2/month)
+log_retention_days = 7  # Shortest retention period
+
+# Security - DEVELOPMENT ONLY!
+allowed_ip_ranges = ["0.0.0.0/0"]  # Open to all (NOT FOR PRODUCTION!)
+enable_ddos_protection = false     # Save $2,900/month
+
+# Additional Tags
+additional_tags = {
+  CostOptimized = "true"
+  Purpose       = "Development"
+  Warning       = "Not production-ready"
+}
+
+# IMPORTANT NOTES:
+# ================
+# 1. app_min_replicas = 0 means your app will scale to zero when idle
+#    This saves ~$15-20/month but causes cold starts (3-10 seconds)
+#
+# 2. This configuration is NOT suitable for production:
+#    - No high availability
+#    - No geo-redundant backups
+#    - Minimal resources
+#    - Open security (allowed_ip_ranges = 0.0.0.0/0)
+#
+# 3. Expected monthly cost: ~$25-35
+#    - PostgreSQL B1ms: ~$12
+#    - Container Apps (low usage): ~$5-15
+#    - Container Registry Basic: ~$5
+#    - Log Analytics: ~$2-3
+#
+# 4. For production, use production.tfvars.example instead

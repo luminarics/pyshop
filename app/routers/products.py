@@ -20,10 +20,15 @@ async def list_products(
     session: AsyncSession = Depends(get_session),
     limit: int = Query(10, ge=1),
     offset: int = Query(0, ge=0),
+    category: str | None = Query(None, description="Filter by category"),
 ):
-    result = await session.execute(
-        select(Product).order_by(Product.id).offset(offset).limit(limit)
-    )
+    query = select(Product)
+
+    if category:
+        query = query.where(Product.category == category)
+
+    query = query.order_by(Product.id).offset(offset).limit(limit)
+    result = await session.execute(query)
     return result.scalars().all()
 
 

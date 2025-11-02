@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShoppingBag, RefreshCw, ArrowRight } from "lucide-react";
+import { Shirt, ShoppingBag, RefreshCw, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { ProductGridLayout } from "@/components/products";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
@@ -15,18 +14,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartApi, ApiError } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 
-function ProductsPageContent() {
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category");
+function ClothingProductsContent() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const { products, isLoading, error, refetch, total, totalPages } = useProducts({
     page,
     limit: pageSize,
-    ...(categoryParam && { category: categoryParam }),
+    category: "clothing",
   });
   const queryClient = useQueryClient();
   const [cartItems, setCartItems] = useState<Map<number, number>>(new Map());
+
+  // Filter for clothing products (adjust based on your category field)
+  // For now, we'll show all products. You can add category filtering when you implement categories
+  const clothingProducts = products;
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -35,25 +36,20 @@ function ProductsPageContent() {
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
-    setPage(1); // Reset to first page when changing page size
+    setPage(1);
   };
 
-  // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity }: { productId: number; quantity: number }) => {
-      console.log("Mutation starting for product:", productId);
       const token = authStorage.getToken();
-      console.log("Token exists:", !!token);
       if (!token) throw new Error("Not authenticated");
       return cartApi.addItem(token, { product_id: productId, quantity });
     },
-    onSuccess: (data, variables) => {
-      console.log("Add to cart successful:", data);
-      const product = products.find((p) => p.id === variables.productId);
+    onSuccess: (_data, variables) => {
+      const product = clothingProducts.find((p) => p.id === variables.productId);
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`${product?.name || "Product"} added to cart`);
 
-      // Update local state for UI
       setCartItems((prev) => {
         const newCart = new Map(prev);
         const currentQuantity = newCart.get(variables.productId) || 0;
@@ -62,7 +58,6 @@ function ProductsPageContent() {
       });
     },
     onError: (error: Error) => {
-      console.error("Add to cart error:", error);
       if (error instanceof ApiError) {
         toast.error(error.message);
       } else {
@@ -72,7 +67,6 @@ function ProductsPageContent() {
   });
 
   const handleAddToCart = (product: Product) => {
-    console.log("Add to cart clicked:", product);
     addToCartMutation.mutate({ productId: product.id, quantity: 1 });
   };
 
@@ -91,42 +85,27 @@ function ProductsPageContent() {
 
   const totalItems = Array.from(cartItems.values()).reduce((sum, qty) => sum + qty, 0);
   const totalPrice = Array.from(cartItems.entries()).reduce((sum, [productId, qty]) => {
-    const product = products.find((p) => p.id === productId);
+    const product = clothingProducts.find((p) => p.id === productId);
     return sum + (product ? product.price * qty : 0);
   }, 0);
-
-  const categoryTitle = categoryParam
-    ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)} Products`
-    : "Products";
-  const categoryDescription = categoryParam
-    ? `Browse our ${categoryParam} collection`
-    : "Browse our collection of amazing products";
 
   return (
     <ResponsiveContainer size="2xl" className="py-8">
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <ResponsiveText as="h1" variant="h1" className="mb-2">
-            {categoryTitle}
-          </ResponsiveText>
+          <div className="mb-2 flex items-center gap-2">
+            <Shirt className="h-8 w-8 text-purple-500" />
+            <ResponsiveText as="h1" variant="h1">
+              Clothing
+            </ResponsiveText>
+          </div>
           <p className="text-muted-foreground">
-            {categoryDescription}
+            Browse our stylish collection of fashion and apparel
           </p>
-          {categoryParam && (
-            <div className="mt-2">
-              <Link
-                href="/products"
-                className="text-sm text-primary hover:underline"
-              >
-                ← View all products
-              </Link>
-            </div>
-          )}
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Cart Summary */}
           {totalItems > 0 && (
             <>
               <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
@@ -149,7 +128,6 @@ function ProductsPageContent() {
             </>
           )}
 
-          {/* Refresh Button */}
           <Button
             variant="outline"
             size="icon"
@@ -180,13 +158,13 @@ function ProductsPageContent() {
       {/* Pagination Info */}
       {!isLoading && total > 0 && (
         <div className="mb-4 text-sm text-muted-foreground">
-          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, total)} of {total} {categoryParam ? `${categoryParam} ` : ""}products
+          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, total)} of {total} clothing items
         </div>
       )}
 
       {/* Products Grid */}
       <ProductGridLayout
-        products={products}
+        products={clothingProducts}
         isLoading={isLoading}
         onAddToCart={handleAddToCart}
         cartItems={cartItems}
@@ -201,44 +179,16 @@ function ProductsPageContent() {
         pageSize={pageSize}
         onPageSizeChange={handlePageSizeChange}
         total={total}
-        emptyMessage={
-          error
-            ? "Unable to load products. Please try again."
-            : "No products available at the moment."
-        }
+        emptyMessage="No clothing items available at the moment."
       />
-
-      {/* Quick Stats (Optional) */}
-      {!isLoading && products.length > 0 && (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Total Products</p>
-            <p className="text-2xl font-bold">{products.length}</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Average Price</p>
-            <p className="text-2xl font-bold">
-              ${(products.reduce((sum, p) => sum + p.price, 0) / products.length).toFixed(2)}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">In Cart</p>
-            <p className="text-2xl font-bold">{totalItems}</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Cart Total</p>
-            <p className="text-2xl font-bold">${totalPrice.toFixed(2)}</p>
-          </div>
-        </div>
-      )}
     </ResponsiveContainer>
   );
 }
 
-export default function ProductsPage() {
+export default function ClothingProductsPage() {
   return (
     <ProtectedRoute>
-      <ProductsPageContent />
+      <ClothingProductsContent />
     </ProtectedRoute>
   );
 }
