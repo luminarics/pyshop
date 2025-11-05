@@ -7,6 +7,7 @@ import { ShoppingCartIcon, UserIcon, MenuIcon, SearchIcon, LogOut } from "lucide
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useCartCount } from "@/hooks/useCartCount";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -28,6 +29,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export function Header() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
+  const { itemCount, hasItems } = useCartCount();
 
   const handleLogout = async () => {
     try {
@@ -197,9 +199,11 @@ export function Header() {
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/cart">
               <ShoppingCartIcon className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
-                2
-              </span>
+              {hasItems && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
               <span className="sr-only">Shopping cart</span>
             </Link>
           </Button>
