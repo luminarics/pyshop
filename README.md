@@ -1,11 +1,11 @@
 # 🚀 pyshop‑api
-### Flagship Python Project - Production-Ready E-Commerce API
+### Full-Stack E-Commerce Platform - Production-Ready with Cloud Infrastructure
 
-![CI](https://github.com/luminarics/pyshop-api/actions/workflows/python-tests.yml/badge.svg) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi) ![Python](https://img.shields.io/badge/Python-3.10+-3776ab?logo=python&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?logo=docker&logoColor=white) ![Coverage](https://img.shields.io/badge/Coverage-90%25+-brightgreen) 
+![CI](https://github.com/luminarics/pyshop-api/actions/workflows/python-tests.yml/badge.svg) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi) ![Python](https://img.shields.io/badge/Python-3.10+-3776ab?logo=python&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?logo=docker&logoColor=white) ![Coverage](https://img.shields.io/badge/Coverage-90%25+-brightgreen) ![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js) ![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform) 
 
 ---
 
-**An enterprise-grade, fully‑async e‑commerce API showcasing modern Python development excellence built with FastAPI 0.115 and SQLModel.** Features complete JWT authentication, real-time monitoring, and production-ready Docker deployment.
+**A complete, enterprise-grade e-commerce platform with FastAPI backend, Next.js frontend, and cloud infrastructure.** Features full shopping cart & checkout, order management, JWT authentication, real-time monitoring, AWS/Azure Terraform deployments, and production-ready Docker orchestration.
 
 ##
 
@@ -17,27 +17,53 @@ docker compose up --build         # API → http://localhost:8000 ⚡️
 
 | URL        | What                                               |
 | ---------- | -------------------------------------------------- |
+| `:3000`    | Next.js Frontend (PyShop e-commerce UI)            |
 | `/docs`    | Swagger‑UI (OpenAPI)                               |
 | `/redoc`   | ReDoc docs                                         |
 | `/health`  | Liveness/DB check                                  |
 | `/metrics` | Prometheus metrics (scraped by the prom container) |
 | `:9090`    | Prometheus UI                                      |
-| `:3000`    | Grafana (admin / admin on first run)               |
+| `:3002`    | Grafana (admin / admin, auto-configured)           |
 
 ---
 
 ### 🚀 Core Features
 
-* **FastAPI 0.115 + SQLModel** (async engine, asyncpg driver)
-* **FastAPI‑Users** JWT auth with pluggable back‑end
-* **Docker + Compose** for DB, API, Prometheus, Grafana
-* **Prometheus /metrics** + ready‑to‑import Grafana dashboard
-* **Pytest**, **ruff**, **black**, **mypy** – wired in GitHub Actions CI
-* **≥90 % comprehensive test suite** with pytest and async support
-* **Alembic** migrations (auto‑generate & run on start‑up)
-* **GitHub Actions CI/CD** - Automated testing, linting, and Docker image publishing
-* **Playwright E2E Tests** - Comprehensive end-to-end testing suite
-* **Development Scripts** - Automated setup, testing, and database management
+#### 🎯 Backend (FastAPI)
+* **FastAPI 0.115 + SQLModel** - 100% async with PostgreSQL (asyncpg)
+* **FastAPI-Users** - JWT authentication with refresh tokens
+* **Complete Shopping Cart System**
+  - Guest cart support (session-based, cookie management)
+  - User cart persistence and migration
+  - Cart validation and conversion to orders
+* **Order Management System**
+  - Full order lifecycle (pending → confirmed → processing → shipped → delivered)
+  - Payment status tracking (pending, completed, failed, refunded)
+  - Order history and detailed tracking
+  - Shipping information management
+* **Product Catalog** - Advanced pagination, filtering, and search
+* **Prometheus /metrics** + auto-provisioned Grafana dashboards
+
+#### 🎨 Frontend (Next.js 15)
+* **15+ Production Pages** - Cart, Checkout, Orders, Products, Categories, Deals, Wishlist, Settings, Profile, Dashboard, Contact, About
+* **TypeScript + Tailwind CSS + shadcn/ui** - Type-safe, responsive design system
+* **Dynamic Shopping Cart** - Real-time item count updates in header
+* **Protected Routes** - JWT authentication with automatic token refresh
+* **React Query** - Optimized data fetching, caching, and state management
+* **Complete Checkout Flow** - Multi-step with validation and order confirmation
+
+#### ☁️ Infrastructure & DevOps
+* **Terraform IaC** - AWS (ECS, Aurora Serverless, ALB, CloudWatch) & Azure deployments
+* **Docker + Compose** - Multi-service orchestration (API, DB, Frontend, Prometheus, Grafana)
+* **GitHub Actions CI/CD** - Automated testing, linting, Docker image publishing to GHCR
+* **Alembic Migrations** - Auto-generate & run on startup
+* **Development Scripts** - One-command setup, testing, and database management
+
+#### ✅ Quality & Testing
+* **≥90% Test Coverage** - Pytest with async support
+* **E2E Testing** - Playwright for full user journey validation
+* **Code Quality** - Ruff, Black, MyPy with strict type checking
+* **Pre-commit Hooks** - Automated quality checks
 
 ### 💎 What Makes This Project Stand Out
 
@@ -48,6 +74,8 @@ docker compose up --build         # API → http://localhost:8000 ⚡️
 * **🧪 Quality Assurance** - 90%+ test coverage, strict typing, automated code quality checks
 * **🚀 Developer Experience** - Hot reload, comprehensive tooling, clear documentation
 * **🔄 CI/CD Ready** - GitHub Actions, pre-commit hooks, automated deployment
+* **☁️ Cloud-Ready Infrastructure** - AWS & Azure Terraform modules for production deployment
+* **🛒 Complete E-commerce Features** - Full cart, checkout, orders, and product management
 
 Roadmap → [#milestones](#roadmap).
 
@@ -157,7 +185,11 @@ The Docker image runs `alembic upgrade head` at start‑up so containers come up
 ## Monitoring
 
 * **Prometheus** scrapes `http://api:8000/metrics` every 15 s (see `monitoring/prometheus.yml`).
-* **Grafana** starts with an empty workspace. Import `monitoring/grafana.json` or build your own.
+* **Grafana** auto-provisions with pre-configured Prometheus datasource and PyShop API dashboard
+  - Dashboard includes: Request rates, response times (p50/p90/p95/p99), status codes, error rates, memory usage
+  - Configuration in `monitoring/grafana/provisioning/` (datasources + dashboards)
+  - Access at http://localhost:3002 (admin/admin)
+  - No manual import needed - ready on first startup!
 
 ![Grafana screenshot](./docs/grafana.png)
 
@@ -190,7 +222,11 @@ docs/
  └── DEPLOYMENT.md        # Deployment guide
 monitoring/
  ├── prometheus.yml
- └── grafana.json
+ ├── grafana.json         # Dashboard definition
+ └── grafana/
+     └── provisioning/    # Auto-provisioning configs
+         ├── datasources/ # Prometheus datasource
+         └── dashboards/  # Pre-configured dashboards
 Dockerfile
 docker-compose.yml
 alembic/
@@ -200,9 +236,20 @@ alembic/
 
 ## Roadmap
 
-* 🚀 Deploy to **AWS Fargate** via Terraform
-* 📊 Publish Grafana dashboards to Grafana Cloud
-* 🛠️ Contribute two PRs to the FastAPI ecosystem
+### ✅ Completed
+* ✅ Deploy infrastructure to **AWS/Azure** via Terraform
+* ✅ Implement complete shopping cart and checkout system
+* ✅ Build production-ready Next.js frontend with 15+ pages
+* ✅ Auto-provision Grafana monitoring dashboards
+* ✅ Guest cart support with session management
+* ✅ Order management system with full lifecycle tracking
+
+### 🚀 In Progress / Planned
+* 💳 Payment gateway integration (Stripe/PayPal)
+* ⭐ Product reviews and ratings system
+* 🔍 Advanced product search with Elasticsearch
+* 📧 Email notifications for order updates
+* 🛠️ Contribute PRs to the FastAPI ecosystem
 ---
 
 ## Contributing
