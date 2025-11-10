@@ -18,7 +18,7 @@ prometheus-fastapi-instrumentator = "^7.1.0"
 loguru = "^0.7.3"
 fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
 python-jose = "^3.5.0"
-alembic = "^1.17.0"
+alembic = "^1.17.1"
 cryptography = "^45.0.7"
 
 [tool.poetry.group.dev.dependencies]
