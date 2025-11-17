@@ -30,7 +30,7 @@ black = "^25.11.0"
 mypy = "^1.18.2"
 pre-commit = "^4.4.0"
 types-python-jose = "^3.5.0.20250531"
-playwright = "^1.55.0"
+playwright = "^1.56.0"
 pytest-playwright = "^0.7.1"
 pytest-cov = "^7.0.0"
 
