@@ -856,18 +856,18 @@ standard-no-fastapi-cloud-cli = ["email-validator (>=2.0.0)", "fastapi-cli[stand
 
 [[package]]
 name = "fastapi-users"
-version = "14.0.1"
+version = "15.0.1"
 description = "Ready-to-use and customizable users management for FastAPI"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "fastapi_users-14.0.1-py3-none-any.whl", hash = "sha256:074df59676dccf79412d2880bdcb661ab1fabc2ecec1f043b4e6a23be97ed9e1"},
-    {file = "fastapi_users-14.0.1.tar.gz", hash = "sha256:8c032b3a75c6fb2b1f5eab8ffce5321176e9916efe1fe93e7c15ee55f0b02236"},
+    {file = "fastapi_users-15.0.1-py3-none-any.whl", hash = "sha256:6f637eb2fc80be6bba396b77dded30fe4c22fa943349d2e0a1647894f8b21c16"},
+    {file = "fastapi_users-15.0.1.tar.gz", hash = "sha256:c822755c1288740a919636d3463797e54df91b53c1c6f4917693d499867d21a7"},
 ]
 
 [package.dependencies]
-email-validator = ">=1.1.0,<2.3"
+email-validator = ">=1.1.0,<2.4"
 fastapi = ">=0.65.2"
 fastapi-users-db-sqlalchemy = {version = ">=7.0.0", optional = true, markers = "extra == \"sqlalchemy\""}
 makefun = ">=1.11.2,<2.0.0"
@@ -878,7 +878,7 @@ python-multipart = "0.0.20"
 [package.extras]
 beanie = ["fastapi-users-db-beanie (>=4.0.0)"]
 oauth = ["httpx-oauth (>=0.13)"]
-redis = ["redis (>=4.3.3,<6.0.0)"]
+redis = ["redis (>=4.3.3,<8.0.0)"]
 sqlalchemy = ["fastapi-users-db-sqlalchemy (>=7.0.0)"]
 
 [[package]]
@@ -2696,4 +2696,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "b0253dafbb3bddc40cfe3c8b9fe8672277ca5882353ac3a851eaf5f2d35c6aab"
+content-hash = "c76defb511bbaf16d6b7d9e31962a568e6770cdb37753d4b471a1069fa83ce80"
