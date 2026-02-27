@@ -13,7 +13,6 @@ uvicorn = {extras = ["standard"], version = "^0.41.0"}
 sqlmodel = "^0.0.37"
 asyncpg = "^0.31.0"
 psycopg2-binary = "^2.9.11"
-pytest-asyncio = "0.21.2"
 prometheus-fastapi-instrumentator = "^7.1.0"
 loguru = "^0.7.3"
 fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
@@ -33,6 +32,7 @@ types-python-jose = "^3.5.0.20250531"
 playwright = "^1.58.0"
 pytest-playwright = "^0.7.2"
 pytest-cov = "^7.0.0"
+pytest-asyncio = "^0.24.0"
 
 
 [build-system]
@@ -52,7 +52,7 @@ extend-exclude = '''
 )$
 '''
 
-[mypy]
-python_version = 3.10
+[tool.mypy]
+python_version = "3.10"
 strict = true
 

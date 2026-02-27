@@ -1,4 +1,4 @@
-FROM python:3.14-bookworm
+FROM python:3.12-bookworm
 
 ARG POETRY_VERSION=1.8.2
 ARG GIT_SHA=unknown
